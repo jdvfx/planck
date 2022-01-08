@@ -18,19 +18,41 @@
 /* Removed Colemak, Dvorak, Plover - also removed any keymap to switch between them and Qwerty
  * home,end,pageUp,pageDown are on the arrows with either raise/lower keys
  * (){}[] are on the same layer (lower+opl;./)
- * raise+jkl maps to -=+ for easy increment/decrement += -=    
- * \ is on the same key as / (with raise) 
+ * raise+jkl maps to -=+ for easy increment/decrement += -=
+ * \ is on the same key as / (with raise)
  * _ is in the same key as - (lower+j raise+j)
  */
 
 #include QMK_KEYBOARD_H
 
 enum planck_layers {
-  _QWERTY,
+  _BASE,
   _LOWER,
   _RAISE,
   _ADJUST
 };
+
+// RBB lighting per layer
+const rgblight_segment_t PROGMEM base_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 8, HSV_WHITE});
+const rgblight_segment_t PROGMEM lower_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 8, HSV_RED});
+const rgblight_segment_t PROGMEM raise_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 8, HSV_GREEN});
+const rgblight_segment_t PROGMEM adjust_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 8, HSV_BLUE});
+
+// Later layers take precedence.
+const rgblight_segment_t* const PROGMEM rgb_layers[] = RGBLIGHT_LAYERS_LIST(
+    base_layer,
+    lower_layer,
+    raise_layer,
+    adjust_layer
+);
+
+
+void keyboard_post_init_user(void) {
+    rgblight_layers = rgb_layers;
+    rgblight_set_layer_state(0, true);
+}
+
+
 
 enum planck_keycodes {
   QWERTY = SAFE_RANGE,
@@ -48,7 +70,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  * | Shift|   Z  |   X  |   C  |   V  |   B  |   N  |   M  |   ,  |   .  |   /  |Enter |
  * | Del  | Ctrl | GUI  | Alt  |Lower |    Space    |Raise | Left | Down | Up   |Right |
  */
-[_QWERTY] = LAYOUT_planck_grid(
+[_BASE] = LAYOUT_planck_grid(
     KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSPC,
     KC_ESC,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,    KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
     KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_ENT,
@@ -57,13 +79,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /* Lower
  * |   ~  |   !  |   @  |   #  |   $  |   %  |   ^  |   &  |   *  |   (  |   )  |      |
  * |      |  F1  |  F2  |  F3  |  F4  |  F5  |  F6  |   _  |   +  |   {  |   }  |  |   |
- * |      |  F7  |  F8  |  F9  |  F10 |  F11 |  F12 |      |      |   [  |   ]  |      |
- * |Leader|      |      |      |      |             |      | Home |Pg Dn |Pg Up | End  | 
+ * | Bksp |  F7  |  F8  |  F9  |  F10 |  F11 |  F12 |      |      |   [  |   ]  |      |
+ * |Leader|      |      |      |      |             |      | Home |Pg Dn |Pg Up | End  |
  */
 [_LOWER] = LAYOUT_planck_grid(
     KC_TILD, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC, KC_CIRC, KC_AMPR,    KC_ASTR,    KC_LPRN, KC_RPRN, _______,
     _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,   KC_UNDS,    KC_PLUS,    KC_LCBR, KC_RCBR, KC_PIPE,
-    _______, KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  _______,    _______,    KC_LBRC, KC_RBRC, _______,
+    KC_BSPC, KC_F7,   KC_F8,   KC_F9,   KC_F10,  KC_F11,  KC_F12,  _______,    _______,    KC_LBRC, KC_RBRC, _______,
     KC_LEAD, _______, _______, _______, _______, _______, _______, _______,    KC_HOME,    KC_PGDN, KC_PGUP, KC_END
 ),
 /* Raise
@@ -75,7 +97,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 [_RAISE] = LAYOUT_planck_grid(
     KC_GRV,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,    KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    _______,
     _______, _______, _______, _______, _______, _______, _______, KC_MINS, KC_PLUS, KC_EQL,  _______, KC_DQUO,
-    _______, _______, _______, _______, _______, _______, _______, _______, _______, _______, KC_BSLS, _______,
+    _______, _______, _______, _______, _______, KC_MS_U, KC_MS_D, KC_WH_D, KC_WH_U, _______, KC_BSLS, _______,
     KC_PSCR, _______, _______, _______, _______, _______, _______, _______, KC_HOME, KC_PGDN, KC_PGUP, KC_END
 ),
 /* Adjust (Lower + Raise)
@@ -95,9 +117,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
 
 // >> turn on layer _ADJUST if _LOWER and _RAISE are both pressed
-layer_state_t layer_state_set_user(layer_state_t state) {
-  return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
-}
+// layer_state_t layer_state_set_user(layer_state_t state) {
+//   return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
+// }
 
 
 /*
@@ -162,3 +184,17 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
   }
 }
 
+
+bool led_update_user(led_t led_state) {
+    // Turn on RBG for capslock.
+    rgblight_set_layer_state(4, led_state.caps_lock);
+    return true;
+}
+
+layer_state_t layer_state_set_user(layer_state_t state) {
+    // Set RBG layer according to active keymap layer.
+    rgblight_set_layer_state(1, layer_state_cmp(state, 1));
+    rgblight_set_layer_state(2, layer_state_cmp(state, 2));
+    rgblight_set_layer_state(3, layer_state_cmp(state, 1) && layer_state_cmp(state, 2));
+    return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
+}
