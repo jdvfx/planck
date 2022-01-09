@@ -32,27 +32,6 @@ enum planck_layers {
   _ADJUST
 };
 
-// RBB lighting per layer
-const rgblight_segment_t PROGMEM base_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 8, HSV_WHITE});
-const rgblight_segment_t PROGMEM lower_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 8, HSV_RED});
-const rgblight_segment_t PROGMEM raise_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 8, HSV_GREEN});
-const rgblight_segment_t PROGMEM adjust_layer[] = RGBLIGHT_LAYER_SEGMENTS({0, 8, HSV_BLUE});
-
-// Later layers take precedence.
-const rgblight_segment_t* const PROGMEM rgb_layers[] = RGBLIGHT_LAYERS_LIST(
-    base_layer,
-    lower_layer,
-    raise_layer,
-    adjust_layer
-);
-
-
-void keyboard_post_init_user(void) {
-    rgblight_layers = rgb_layers;
-    rgblight_set_layer_state(0, true);
-}
-
-
 
 enum planck_keycodes {
   QWERTY = SAFE_RANGE,
@@ -103,8 +82,8 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 /* Adjust (Lower + Raise)
  * |      | Reset|Debug | RGB  |RGBMOD|      |      |      |      |HUE+  |HUE-  |      |
  * |      |      |      |      |      |      |      |      |      |SAT + |SAT-  |      |
- * |      |      |      |      |      |      |TermOn|TermOf|BRGTH+|BRGTH-|      |
- * |      |      |      |      |      |      |       |      |     |      |      |      |
+ * |      |      |      |      |      |      |TermOn|TermOf|BRGTH+|BRGTH-|      |      |
+ * |      |      |      |      |      |      |      |      |     |       |      |      |
  */
 [_ADJUST] = LAYOUT_planck_grid(
     _______, RESET,   DEBUG,   RGB_TOG, RGB_MOD, _______, _______, _______, _______,  RGB_HUI, RGB_HUD, _______,
@@ -194,16 +173,3 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
 }
 
 
-bool led_update_user(led_t led_state) {
-    // Turn on RBG for capslock.
-    rgblight_set_layer_state(4, led_state.caps_lock);
-    return true;
-}
-
-layer_state_t layer_state_set_user(layer_state_t state) {
-    // Set RBG layer according to active keymap layer.
-    rgblight_set_layer_state(1, layer_state_cmp(state, 1));
-    rgblight_set_layer_state(2, layer_state_cmp(state, 2));
-    rgblight_set_layer_state(3, layer_state_cmp(state, 1) && layer_state_cmp(state, 2));
-    return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
-}
