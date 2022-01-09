@@ -152,17 +152,20 @@ void matrix_scan_user(void) {
 enum combo_events {
   BSPC_P_CLEAR,
   SCLN_QUOT_CLEARWORD,
+  LOWER_ALT_CLEARWORD,
   COMBO_LENGTH
 };
 uint16_t COMBO_LEN = COMBO_LENGTH; // remove the COMBO_COUNT define and use this instead!
 
 const uint16_t PROGMEM clear_line_combo[] = {KC_BSPC, KC_P, COMBO_END};
 const uint16_t PROGMEM clear_word_combo[] = {KC_SCLN, KC_QUOT, COMBO_END};
+const uint16_t PROGMEM clear_word_combo2[] = {LOWER, KC_LALT, COMBO_END};
 
 
 combo_t key_combos[] = {
   [BSPC_P_CLEAR] = COMBO_ACTION(clear_line_combo),
   [SCLN_QUOT_CLEARWORD] = COMBO_ACTION(clear_word_combo),
+  [LOWER_ALT_CLEARWORD] = COMBO_ACTION(clear_word_combo2),
 };
 /* COMBO_ACTION(x) is same as COMBO(x, KC_NO) */
 
@@ -176,6 +179,12 @@ void process_combo_event(uint16_t combo_index, bool pressed) {
       }
       break;
     case SCLN_QUOT_CLEARWORD:
+      if (pressed) {
+        tap_code16(LCTL(KC_LEFT));
+        tap_code16(LCTL(KC_DEL));
+      }
+      break;
+    case LOWER_ALT_CLEARWORD:
       if (pressed) {
         tap_code16(LCTL(KC_LEFT));
         tap_code16(LCTL(KC_DEL));
