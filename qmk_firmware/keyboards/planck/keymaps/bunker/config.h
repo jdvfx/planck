@@ -20,13 +20,6 @@
 #define STARTUP_SONG SONG(PLANCK_SOUND)
 #endif
 
-
 // for Leader Key
-#define LEADER_TIMEOUT 1000
-
-
-
-#define RGBLIGHT_LAYERS
-#define RGBLIGHT_LED_MAP {8, 2, 3, 7, 6, 5, 4, 0, 1}
-
+// #define LEADER_TIMEOUT 1000
 
